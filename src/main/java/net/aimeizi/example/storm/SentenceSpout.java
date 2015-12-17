@@ -1,4 +1,4 @@
-package net.aimeizi.example;
+package net.aimeizi.example.storm;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;

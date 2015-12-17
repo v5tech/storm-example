@@ -1,10 +1,10 @@
-package net.aimeizi.example;
+package net.aimeizi.example.storm;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
+import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
-import backtype.storm.utils.Utils;
 
 /**
  * Created by Joyent on 15/12/12.
@@ -36,15 +36,21 @@ public class WordCountTopology {
         builder.setBolt(REPORT_BOLT_ID,reportBolt).globalGrouping(COUNT_BOLT_ID);
 
         Config config = new Config();
-        config.setMaxTaskParallelism(3);
-//        config.setDebug(true);
-        LocalCluster cluster = new LocalCluster();
-        cluster.submitTopology(TOPOLOGY_NAME,config,builder.createTopology());
+        config.setDebug(true);
 
-        Thread.sleep(100000);
+        if(args != null && args.length > 0){
+            config.put(Config.NIMBUS_HOST, args[0]);
+            config.setNumWorkers(3);
+            StormSubmitter.submitTopologyWithProgressBar(TOPOLOGY_NAME, config, builder.createTopology());
+        }else{
+            config.setMaxTaskParallelism(3);
+            LocalCluster cluster = new LocalCluster();
+            cluster.submitTopology(TOPOLOGY_NAME,config,builder.createTopology());
+            Thread.sleep(60000);
+            cluster.killTopology(TOPOLOGY_NAME);
+            cluster.shutdown();
+        }
 
-        cluster.killTopology(TOPOLOGY_NAME);
-        cluster.shutdown();
     }
 
 }
