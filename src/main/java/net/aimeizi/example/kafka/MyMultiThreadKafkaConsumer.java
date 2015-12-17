@@ -14,17 +14,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 多线程Consumer
  * Created by fengjing on 2015/12/14.
  */
-public class MyKafkaConsumer {
+public class MyMultiThreadKafkaConsumer {
 
     private final ConsumerConnector consumer;
     private final String topic;
     private ExecutorService executor;
 
-    public MyKafkaConsumer(String a_zookeeper, String a_groupId, String a_topic) {
-        consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(a_zookeeper, a_groupId));
-        this.topic = a_topic;
+    public MyMultiThreadKafkaConsumer(String zookeeper, String groupId, String topic) {
+        consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(zookeeper, groupId));
+        this.topic = topic;
     }
 
     public void shutdown() {
@@ -39,23 +40,33 @@ public class MyKafkaConsumer {
         }
     }
 
-    public void run(int a_numThreads) {
+    public void run(int numThreads) {
         Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
-        topicCountMap.put(topic, new Integer(a_numThreads));
+        topicCountMap.put(topic, new Integer(numThreads));
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicCountMap);
         List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic);
-        executor = Executors.newFixedThreadPool(a_numThreads);
+        executor = Executors.newFixedThreadPool(numThreads);
         int threadNumber = 0;
         for (final KafkaStream stream : streams) {
-            executor.submit(new ConsumerRunner(stream, threadNumber));
+            final int finalThreadNumber = threadNumber;
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    ConsumerIterator<byte[], byte[]> it = stream.iterator();
+                    while (it.hasNext()) {
+                        System.out.println("Thread " + finalThreadNumber + ": " + new String(it.next().message()));
+                    }
+                    System.out.println("Shutting down Thread: " + finalThreadNumber);
+                }
+            });
             threadNumber++;
         }
     }
 
-    private static ConsumerConfig createConsumerConfig(String a_zookeeper, String a_groupId) {
+    private static ConsumerConfig createConsumerConfig(String zookeeper, String groupId) {
         Properties props = new Properties();
-        props.put("zookeeper.connect", a_zookeeper);
-        props.put("group.id", a_groupId);
+        props.put("zookeeper.connect", zookeeper);
+        props.put("group.id", groupId);
         props.put("zookeeper.session.timeout.ms", "400");
         props.put("zookeeper.sync.time.ms", "200");
         props.put("auto.commit.interval.ms", "1000");
@@ -67,25 +78,7 @@ public class MyKafkaConsumer {
         String groupId = "mygroup";
         String topic = "test";
         int threads = 5;
-        MyKafkaConsumer kafkaConsumer = new MyKafkaConsumer(zooKeeper, groupId, topic);
+        MyMultiThreadKafkaConsumer kafkaConsumer = new MyMultiThreadKafkaConsumer(zooKeeper, groupId, topic);
         kafkaConsumer.run(threads);
-    }
-}
-
-class ConsumerRunner implements Runnable {
-    private KafkaStream m_stream;
-    private int m_threadNumber;
-
-    public ConsumerRunner(KafkaStream a_stream, int a_threadNumber) {
-        m_threadNumber = a_threadNumber;
-        m_stream = a_stream;
-    }
-
-    public void run() {
-        ConsumerIterator<byte[], byte[]> it = m_stream.iterator();
-        while (it.hasNext()) {
-            System.out.println("Thread " + m_threadNumber + ": " + new String(it.next().message()));
-        }
-        System.out.println("Shutting down Thread: " + m_threadNumber);
     }
 }
