@@ -52,10 +52,8 @@ public class MyKafkaTopology {
         @Override
         public void execute(Tuple input) {
             String line = input.getString(0);
-            LOG.info("RECV[kafka -> splitter] " + line);
             String[] words = line.split("\\s+");
             for (String word : words) {
-                LOG.info("EMIT[splitter -> counter] " + word);
                 collector.emit(input, new Values(word, 1));
             }
             collector.ack(input);
@@ -88,7 +86,6 @@ public class MyKafkaTopology {
         public void execute(Tuple input) {
             String word = input.getString(0);
             int count = input.getInteger(1);
-            LOG.info("RECV[splitter -> counter] " + word + " : " + count);
             AtomicInteger ai = this.counterMap.get(word);
             if (ai == null) {
                 ai = new AtomicInteger();
@@ -96,7 +93,6 @@ public class MyKafkaTopology {
             }
             ai.addAndGet(count);
             collector.ack(input);
-            LOG.info("CHECK statistics map: " + this.counterMap);
         }
 
         /**
@@ -120,9 +116,9 @@ public class MyKafkaTopology {
     }
 
     public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException, InterruptedException {
-//        String zks = "h1:2181,h2:2181,h3:2181";
-        String zks = "192.168.0.201:2181";
-        String topic = "test";
+        String zks = "192.168.64.128:2181,192.168.64.129:2181,192.168.64.130:2181";
+//        String zks = "192.168.0.201:2181";
+        String topic = "kafka-storm";
         String zkRoot = "/storm"; // default zookeeper root configuration for storm
         String id = "word";
 
@@ -130,12 +126,12 @@ public class MyKafkaTopology {
         SpoutConfig spoutConf = new SpoutConfig(brokerHosts, topic, zkRoot, id);
         spoutConf.scheme = new SchemeAsMultiScheme(new StringScheme());
         spoutConf.forceFromStart = false;
-//        spoutConf.zkServers = Arrays.asList(new String[]{"h1", "h2", "h3"});
-        spoutConf.zkServers = Arrays.asList(new String[]{"192.168.0.201"});
+        spoutConf.zkServers = Arrays.asList(new String[]{"192.168.64.128", "192.168.64.129", "192.168.64.130"});
+//        spoutConf.zkServers = Arrays.asList(new String[]{"192.168.0.201"});
         spoutConf.zkPort = 2181;
 
         TopologyBuilder builder = new TopologyBuilder();
-        builder.setSpout("kafka-reader", new KafkaSpout(spoutConf), 5); // Kafka我们创建了一个5分区的Topic，这里并行度设置为5
+        builder.setSpout("kafka-reader", new KafkaSpout(spoutConf), 3); // Kafka我们创建了一个3分区的Topic，这里并行度设置为3
         builder.setBolt("word-splitter", new KafkaWordSplitter(), 2).shuffleGrouping("kafka-reader");
         builder.setBolt("word-counter", new WordCounter()).fieldsGrouping("word-splitter", new Fields("word"));
 

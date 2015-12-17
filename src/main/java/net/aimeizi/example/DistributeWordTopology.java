@@ -59,10 +59,8 @@ public class DistributeWordTopology {
         @Override
         public void execute(Tuple input) {
             String line = input.getString(0).trim();
-            LOG.info("RECV[kafka -> splitter] " + line);
             if (!line.isEmpty()) {
                 String upperLine = line.toUpperCase();
-                LOG.info("EMIT[splitter -> counter] " + upperLine);
                 collector.emit(input, new Values(upperLine, upperLine.length()));
             }
             collector.ack(input);
@@ -89,7 +87,6 @@ public class DistributeWordTopology {
         @Override
         public void execute(Tuple input) {
             String line = input.getString(0).trim();
-            LOG.info("REALTIME: " + line);
             collector.ack(input);
         }
 
@@ -103,8 +100,8 @@ public class DistributeWordTopology {
     public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException, InterruptedException {
 
         // Configure Kafka
-        // String zks = "h1:2181,h2:2181,h3:2181";
-        String zks = "192.168.0.201:2181";
+         String zks = "s1:2181,s2:2181,s3:2181";
+        // String zks = "192.168.0.201:2181";
         String topic = "test";
         String zkRoot = "/storm"; // default zookeeper root configuration for storm
         String id = "word";
@@ -112,13 +109,12 @@ public class DistributeWordTopology {
         SpoutConfig spoutConf = new SpoutConfig(brokerHosts, topic, zkRoot, id);
         spoutConf.scheme = new SchemeAsMultiScheme(new StringScheme());
         spoutConf.forceFromStart = false;
-        // spoutConf.zkServers = Arrays.asList(new String[]{"h1", "h2", "h3"});
-        spoutConf.zkServers = Arrays.asList(new String[]{"192.168.0.201"});
+         spoutConf.zkServers = Arrays.asList(new String[]{"s1", "s2", "s3"});
+        // spoutConf.zkServers = Arrays.asList(new String[]{"192.168.0.201"});
         spoutConf.zkPort = 2181;
 
         // Configure HDFS bolt
-        RecordFormat format = new DelimitedRecordFormat()
-                .withFieldDelimiter("\t"); // use "\t" instead of "," for field delimiter
+        RecordFormat format = new DelimitedRecordFormat().withFieldDelimiter("\t"); // use "\t" instead of "," for field delimiter
         SyncPolicy syncPolicy = new CountSyncPolicy(1000); // sync the filesystem after every 1k tuples
         FileRotationPolicy rotationPolicy = new TimedRotationPolicy(1.0f, TimeUnit.MINUTES); // rotate files
         FileNameFormat fileNameFormat = new DefaultFileNameFormat()
@@ -132,7 +128,7 @@ public class DistributeWordTopology {
 
         // configure & build topology
         TopologyBuilder builder = new TopologyBuilder();
-        builder.setSpout("kafka-reader", new KafkaSpout(spoutConf), 5);
+        builder.setSpout("kafka-reader", new KafkaSpout(spoutConf), 3);
         builder.setBolt("to-upper", new KafkaWordToUpperCase(), 3).shuffleGrouping("kafka-reader");
         builder.setBolt("hdfs-bolt", hdfsBolt, 2).shuffleGrouping("to-upper");
         builder.setBolt("realtime", new RealtimeBolt(), 2).shuffleGrouping("to-upper");

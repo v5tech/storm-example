@@ -51,8 +51,7 @@ public class StormToHDFSTopology {
         private String[] records;
 
         @Override
-        public void open(Map conf, TopologyContext context,
-                         SpoutOutputCollector collector) {
+        public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
             this.collector = collector;
             rand = new Random();
             records = new String[]{
@@ -70,7 +69,6 @@ public class StormToHDFSTopology {
             Date d = new Date(System.currentTimeMillis());
             String minute = df.format(d);
             String record = records[rand.nextInt(records.length)];
-            LOG.info("EMIT[spout -> hdfs] " + minute + " : " + record);
             collector.emit(new Values(minute, record));
         }
 
@@ -84,8 +82,7 @@ public class StormToHDFSTopology {
 
     public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException, InterruptedException {
         // use "|" instead of "," for field delimiter
-        RecordFormat format = new DelimitedRecordFormat()
-                .withFieldDelimiter(" : ");
+        RecordFormat format = new DelimitedRecordFormat().withFieldDelimiter(" : ");
 
         // sync the filesystem after every 1k tuples
         SyncPolicy syncPolicy = new CountSyncPolicy(1000);

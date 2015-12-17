@@ -14,10 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by fengjing on 2015/12/15.
  */
 public class Consumer {
-    private static final String CONFIG = "/consumerContext.xml";
-    private static Random rand = new Random();
 
-    @SuppressWarnings({"unchecked", "unchecked", "rawtypes"})
+    private static final String CONFIG = "/consumerContext.xml";
+
     public static void main(String[] args) {
         ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
         rootLogger.setLevel(Level.toLevel("ERROR"));
