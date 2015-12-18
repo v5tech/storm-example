@@ -59,8 +59,10 @@ public class DistributeWordTopology {
         @Override
         public void execute(Tuple input) {
             String line = input.getString(0).trim();
+            LOG.info("RECV[kafka -> splitter] " + line);
             if (!line.isEmpty()) {
                 String upperLine = line.toUpperCase();
+                LOG.info("EMIT[splitter -> counter] " + upperLine);
                 collector.emit(input, new Values(upperLine, upperLine.length()));
             }
             collector.ack(input);
@@ -87,6 +89,7 @@ public class DistributeWordTopology {
         @Override
         public void execute(Tuple input) {
             String line = input.getString(0).trim();
+            LOG.info("REALTIME: " + line);
             collector.ack(input);
         }
 
@@ -102,7 +105,7 @@ public class DistributeWordTopology {
         // Configure Kafka
          String zks = "s1:2181,s2:2181,s3:2181";
         // String zks = "192.168.0.201:2181";
-        String topic = "test";
+        String topic = "kafka-storm";
         String zkRoot = "/storm"; // default zookeeper root configuration for storm
         String id = "word";
         BrokerHosts brokerHosts = new ZkHosts(zks);

@@ -1,19 +1,43 @@
 package net.aimeizi.example.kafka;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import kafka.javaapi.producer.Producer;
+import kafka.producer.KeyedMessage;
+import kafka.producer.ProducerConfig;
 
 import java.util.Properties;
 import java.util.Random;
 
 /**
- * 消息生产者
- * Created by fengjing on 2015/12/14.
+ * Created by fengjing on 2015/12/18.
  */
-public class MyKafkaProducer {
+public class Kafka2StormProducer {
 
+    private static Producer<String, String> producer;
+
+    public Kafka2StormProducer() {
+
+        Properties props = new Properties();
+
+        // Set the broker list for requesting metadata to find the lead broker
+        props.put("metadata.broker.list", "192.168.64.128:9092,192.168.64.129:9092,192.168.64.131:9092");
+
+        //This specifies the serializer class for keys
+        props.put("serializer.class", "kafka.serializer.StringEncoder");
+
+        // 1 means the producer receives an acknowledgment once the lead replica
+        // has received the data. This option provides better durability as the
+        // client waits until the server acknowledges the request as successful.
+        props.put("request.required.acks", "1");
+
+        ProducerConfig config = new ProducerConfig(props);
+        producer = new Producer<String, String>(config);
+    }
     public static void main(String[] args) {
+        String topic = "kafka-storm";
+        Kafka2StormProducer kafka2StormProducer = new Kafka2StormProducer();
+        kafka2StormProducer.publishMessage(topic);
+    }
+    private void publishMessage(String topic) {
 
         String words = "Each partition is an ordered immutable sequence of messages that is continually appended to—a commit log The messages in the partitions are each assigned a sequential id number called the offset that uniquely identifies each message within the partition" +
                 "The Kafka cluster retains all published messages—whether or not they have been consumed—for a configurable period of time For example if the log retention is set to two days then for the two days after a message is published it is available for consumption after which it will be discarded to free up space Kafka's performance is effectively constant with respect to data size so retaining lots of data is not a problem" +
@@ -28,24 +52,16 @@ public class MyKafkaProducer {
                 "If all the consumer instances have the same consumer group then this works just like a traditional queue balancing load over the consumers" +
                 "If all the consumer instances have different consumer groups then this works like publish-subscribe and all messages are broadcast to all consumers" +
                 "More commonly however we have found that topics have a small number of consumer groups one for each logical subscriber Each group is composed of many consumer instances for scalability and fault tolerance This is nothing more than publish-subscribe semantics where the subscriber is cluster of consumers instead of a single process";
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "192.168.64.128:9092,192.168.64.129:9092,192.168.64.131:9092");
-        props.put("acks", "all");
-        props.put("retries", 0);
-        props.put("batch.size", 16384);
-        props.put("linger.ms", 1);
-        props.put("buffer.memory", 33554432);
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        Producer<String, String> producer = new KafkaProducer(props);
-
         String[] w = words.split(" ");
-
         for(int i = 0; i < 100000; i++){
             Random random = new Random();
             int n = random.nextInt(w.length);
-            producer.send(new ProducerRecord<String, String>("kafka-storm", w[n], w[n]));
+            // Creates a KeyedMessage instance
+            KeyedMessage<String, String> message = new KeyedMessage<String, String>(topic, w[n]);
+            // Publish the message
+            producer.send(message);
         }
+        // Close producer connection with broker.
         producer.close();
     }
 }

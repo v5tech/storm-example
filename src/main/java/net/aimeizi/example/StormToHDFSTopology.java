@@ -69,6 +69,7 @@ public class StormToHDFSTopology {
             Date d = new Date(System.currentTimeMillis());
             String minute = df.format(d);
             String record = records[rand.nextInt(records.length)];
+            LOG.info("EMIT[spout -> hdfs] " + minute + " : " + record);
             collector.emit(new Values(minute, record));
         }
 

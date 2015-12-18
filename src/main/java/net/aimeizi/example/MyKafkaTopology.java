@@ -52,8 +52,10 @@ public class MyKafkaTopology {
         @Override
         public void execute(Tuple input) {
             String line = input.getString(0);
+            LOG.info("RECV[kafka -> splitter] " + line);
             String[] words = line.split("\\s+");
             for (String word : words) {
+                LOG.info("EMIT[splitter -> counter] " + word);
                 collector.emit(input, new Values(word, 1));
             }
             collector.ack(input);
@@ -86,6 +88,7 @@ public class MyKafkaTopology {
         public void execute(Tuple input) {
             String word = input.getString(0);
             int count = input.getInteger(1);
+            LOG.info("RECV[splitter -> counter] " + word + " : " + count);
             AtomicInteger ai = this.counterMap.get(word);
             if (ai == null) {
                 ai = new AtomicInteger();
@@ -93,6 +96,7 @@ public class MyKafkaTopology {
             }
             ai.addAndGet(count);
             collector.ack(input);
+            LOG.info("CHECK statistics map: " + this.counterMap);
         }
 
         /**
@@ -101,9 +105,11 @@ public class MyKafkaTopology {
         @Override
         public void cleanup() {
             System.out.println("----------------The final result:----------------------");
+            LOG.info("----------------The final result:----------------------");
             Iterator<Entry<String, AtomicInteger>> iter = this.counterMap.entrySet().iterator();
             while (iter.hasNext()) {
                 Entry<String, AtomicInteger> entry = iter.next();
+                LOG.info(entry.getKey() + "\t:\t" + entry.getValue().get());
                 System.out.println(entry.getKey() + "\t:\t" + entry.getValue().get());
             }
             System.out.println("--------------------------------------------------------");
