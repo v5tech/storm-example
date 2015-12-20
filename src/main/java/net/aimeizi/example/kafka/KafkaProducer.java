@@ -8,36 +8,16 @@ import java.util.Properties;
 import java.util.Random;
 
 /**
- * Created by fengjing on 2015/12/18.
+ * Created by Administrator on 2015/12/19 0019.
  */
-public class Kafka2StormProducer {
-
-    private static Producer<String, String> producer;
-
-    public Kafka2StormProducer() {
-
+public class KafkaProducer {
+    public static void main(String[] args) throws Exception {
         Properties props = new Properties();
-
-        // Set the broker list for requesting metadata to find the lead broker
-        props.put("metadata.broker.list", "192.168.64.128:9092,192.168.64.129:9092,192.168.64.131:9092");
-
-        //This specifies the serializer class for keys
+        props.put("zk.connect", "192.168.111.128:2181,192.168.111.129:2181,192.168.111.130:2181");
+        props.put("metadata.broker.list","192.168.111.128:9092,192.168.111.129:9092,192.168.111.130:9092");
         props.put("serializer.class", "kafka.serializer.StringEncoder");
-
-        // 1 means the producer receives an acknowledgment once the lead replica
-        // has received the data. This option provides better durability as the
-        // client waits until the server acknowledges the request as successful.
-        props.put("request.required.acks", "1");
-
         ProducerConfig config = new ProducerConfig(props);
-        producer = new Producer<String, String>(config);
-    }
-    public static void main(String[] args) {
-        String topic = "kafka-storm";
-        Kafka2StormProducer kafka2StormProducer = new Kafka2StormProducer();
-        kafka2StormProducer.publishMessage(topic);
-    }
-    private void publishMessage(String topic) {
+        Producer<String, String> producer = new Producer<String, String>(config);
 
         String words = "Each partition is an ordered immutable sequence of messages that is continually appended to—a commit log The messages in the partitions are each assigned a sequential id number called the offset that uniquely identifies each message within the partition" +
                 "The Kafka cluster retains all published messages—whether or not they have been consumed—for a configurable period of time For example if the log retention is set to two days then for the two days after a message is published it is available for consumption after which it will be discarded to free up space Kafka's performance is effectively constant with respect to data size so retaining lots of data is not a problem" +
@@ -53,15 +33,13 @@ public class Kafka2StormProducer {
                 "If all the consumer instances have different consumer groups then this works like publish-subscribe and all messages are broadcast to all consumers" +
                 "More commonly however we have found that topics have a small number of consumer groups one for each logical subscriber Each group is composed of many consumer instances for scalability and fault tolerance This is nothing more than publish-subscribe semantics where the subscriber is cluster of consumers instead of a single process";
         String[] w = words.split(" ");
-        for(int i = 0; i < 100000; i++){
+        // 发送业务消息
+        for (int i = 1; i <= 10000; i++) {
+            Thread.sleep(500);
             Random random = new Random();
             int n = random.nextInt(w.length);
-            // Creates a KeyedMessage instance
-            KeyedMessage<String, String> message = new KeyedMessage<String, String>(topic, w[n]);
-            // Publish the message
+            KeyedMessage<String, String> message =  new KeyedMessage<String, String>("kafka-storm", w[n]);
             producer.send(message);
         }
-        // Close producer connection with broker.
-        producer.close();
     }
 }
