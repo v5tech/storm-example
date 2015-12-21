@@ -21,10 +21,11 @@ public class KafkaConsumer {
     public static void main(String[] args) {
 
         Properties props = new Properties();
-//        props.put("zookeeper.connect", "192.168.111.128:2181,192.168.111.129:2181,192.168.111.130:2181");
-        props.put("zookeeper.connect", "192.168.0.201:2181");
+        props.put("zookeeper.connect", "192.168.111.128:2181,192.168.111.129:2181,192.168.111.130:2181");
+//        props.put("zookeeper.connect", "192.168.0.201:2181");
         props.put("group.id", "mygroup");
         props.put("auto.offset.reset", "smallest");
+        props.put("zookeeper.session.timeout.ms", "40000");
 
         ConsumerConfig config = new ConsumerConfig(props);
         ConsumerConnector consumer = Consumer.createJavaConsumerConnector(config);
