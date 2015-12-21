@@ -43,9 +43,9 @@ storm kafka集群测试环境运行
 storm jar net.aimeizi.example.MyKafkaTopology s1
 ```
 
-# flume + kafka flume整合kafka
+# flume + kafka
 
-flume整合kafka。下面的配置为flume收集`/var/log/bootstrap.log`文件内容到kafka集群
+flume整合kafka。下面的配置为flume收集nginx访问日志到kafka集群
 
 flume-1.6.0 + kafka_2.10-0.8.2.2
 
@@ -60,7 +60,7 @@ a.channels = c
 #source section
 a.sources.r.type = exec
 a.sources.r.channels = c
-a.sources.r.command = tail -n 1000 /var/log/bootstrap.log
+a.sources.r.command = tail -f /var/log/nginx/access.log
 
 #sink section
 a.sinks.k.type = org.apache.flume.sink.kafka.KafkaSink
