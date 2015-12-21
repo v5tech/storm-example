@@ -28,6 +28,7 @@ zkServer.sh status
 
 ```bash
 broker.id=0
+host.name=s1
 zookeeper.connect=s1:2181,s2:2181,s3:2181
 ```
 
@@ -35,6 +36,7 @@ zookeeper.connect=s1:2181,s2:2181,s3:2181
 
 ```bash
 broker.id=1
+host.name=s2
 zookeeper.connect=s1:2181,s2:2181,s3:2181
 ```
 
@@ -42,10 +44,12 @@ zookeeper.connect=s1:2181,s2:2181,s3:2181
 
 ```bash
 broker.id=2
+host.name=s3
 zookeeper.connect=s1:2181,s2:2181,s3:2181
 ```
 
-请确保每台kafka配置文件中的`broker.id`唯一。`zookeeper.connect`参数为zookeeper集群的主机地址及端口号
+请确保每台kafka配置文件中的`broker.id`唯一。`zookeeper.connect`参数为zookeeper集群的主机地址及端口号。
+`host.name`为ip或`hosts`文件中ip与主机地址之间的映射名。程序代码中必须用`host.name`指定的值否则客户端代码连接报错
 
 # 4、启动kafka集群
 
