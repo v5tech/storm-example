@@ -17,11 +17,9 @@ storm WordCountTopology集群环境运行方式
 storm jar net.aimeizi.example.storm.WordCountTopology s1
 ```
 
-
-storm + kafka 集群环境搭建
+# storm + kafka 集群环境搭建
 
 拷贝kafka安装目录下lib目录下的jar到storm集群目录下的lib目录。具体拷贝清单文件如下:
-
 
 ```
 kafka_2.10-0.8.2.2.jar
@@ -39,11 +37,53 @@ log4j-1.2.16.jar
 jopt-simple-3.2.jar
 ```
 
-
 storm kafka集群测试环境运行
 
 ```bash
 storm jar net.aimeizi.example.MyKafkaTopology s1
+```
+
+# flume + kafka flume整合kafka
+
+flume整合kafka。下面的配置为flume收集`/var/log/bootstrap.log`文件内容到kafka集群
+
+flume-1.6.0 + kafka_2.10-0.8.2.2
+
+flume-kafka.properties
+
+```
+#agent section
+a.sources = r
+a.sinks = k
+a.channels = c
+
+#source section
+a.sources.r.type = exec
+a.sources.r.channels = c
+a.sources.r.command = tail -n 1000 /var/log/bootstrap.log
+
+#sink section
+a.sinks.k.type = org.apache.flume.sink.kafka.KafkaSink
+a.sinks.k.topic = kafka-storm
+a.sinks.k.brokerList = 192.168.64.128:9092,192.168.64.129:9092,192.168.64.131:9092
+a.sinks.k.requiredAcks = 1
+a.sinks.k.batchSize = 20
+a.sinks.k.channel = c
+
+#channel section
+a.channels.c.type = memory
+a.channels.c.capacity = 1000
+a.channels.c.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+a.sources.r.channels = c
+a.sinks.k.channel = c
+```
+
+开始采集
+
+```bash
+bin/flume-ng agent -n a -c conf -f conf/flume-kafka.properties
 ```
 
 # 参考文章
