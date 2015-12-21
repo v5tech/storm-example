@@ -13,8 +13,10 @@ import java.util.Random;
 public class KafkaProducer {
     public static void main(String[] args) throws Exception {
         Properties props = new Properties();
-        props.put("zk.connect", "192.168.111.128:2181,192.168.111.129:2181,192.168.111.130:2181");
-        props.put("metadata.broker.list","192.168.111.128:9092,192.168.111.129:9092,192.168.111.130:9092");
+//        props.put("zk.connect", "192.168.111.128:2181,192.168.111.129:2181,192.168.111.130:2181");
+        props.put("zk.connect", "192.168.0.201:2181");
+//        props.put("metadata.broker.list", "192.168.111.128:9092,192.168.111.129:9092,192.168.111.130:9092");
+        props.put("metadata.broker.list", "192.168.0.201:9092");
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         ProducerConfig config = new ProducerConfig(props);
         Producer<String, String> producer = new Producer<String, String>(config);
@@ -38,7 +40,7 @@ public class KafkaProducer {
             Thread.sleep(500);
             Random random = new Random();
             int n = random.nextInt(w.length);
-            KeyedMessage<String, String> message =  new KeyedMessage<String, String>("kafka-storm", w[n]);
+            KeyedMessage<String, String> message = new KeyedMessage<String, String>("kafka-storm", w[n]);
             producer.send(message);
         }
     }

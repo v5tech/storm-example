@@ -35,7 +35,7 @@
                                 producer-properties="producerProperties">
         <int-kafka:producer-configurations>
             <int-kafka:producer-configuration broker-list="localhost:9092"
-                                              topic="test"
+                                              topic="kafka-storm"
                                               key-class-type="java.lang.String"
                                               value-class-type="java.lang.String"
                                               key-serializer="kafkaSerializer"

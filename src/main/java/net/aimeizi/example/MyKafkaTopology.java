@@ -122,8 +122,8 @@ public class MyKafkaTopology {
     }
 
     public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException, InterruptedException {
-        String zks = "192.168.64.128:2181,192.168.64.129:2181,192.168.64.130:2181";
-//        String zks = "192.168.0.201:2181";
+//        String zks = "192.168.64.128:2181,192.168.64.129:2181,192.168.64.130:2181";
+        String zks = "192.168.0.201:2181";
         String topic = "kafka-storm";
         String zkRoot = "/storm"; // default zookeeper root configuration for storm
         String id = "word";
@@ -132,8 +132,8 @@ public class MyKafkaTopology {
         SpoutConfig spoutConf = new SpoutConfig(brokerHosts, topic, zkRoot, id);
         spoutConf.scheme = new SchemeAsMultiScheme(new StringScheme());
         spoutConf.forceFromStart = false;
-        spoutConf.zkServers = Arrays.asList(new String[]{"192.168.64.128", "192.168.64.129", "192.168.64.130"});
-//        spoutConf.zkServers = Arrays.asList(new String[]{"192.168.0.201"});
+//        spoutConf.zkServers = Arrays.asList(new String[]{"192.168.64.128", "192.168.64.129", "192.168.64.130"});
+        spoutConf.zkServers = Arrays.asList(new String[]{"192.168.0.201"});
         spoutConf.zkPort = 2181;
 
         TopologyBuilder builder = new TopologyBuilder();

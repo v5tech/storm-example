@@ -12,6 +12,7 @@ import java.util.Random;
 public class Producer {
     private static final String CONFIG = "/producerContext.xml";
     private static Random rand = new Random();
+
     public static void main(String[] args) {
         final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(CONFIG, Producer.class);
         ctx.start();

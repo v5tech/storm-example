@@ -1,4 +1,4 @@
-package net.aimeizi.example.kafka;
+package net.aimeizi.example.kafkaclientsapi;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Random;
 
 /**
+ * 使用 kafka-clients api 发送消息
  * 消息生产者
  * Created by fengjing on 2015/12/14.
  */
@@ -29,7 +30,8 @@ public class MyKafkaProducer {
                 "If all the consumer instances have different consumer groups then this works like publish-subscribe and all messages are broadcast to all consumers" +
                 "More commonly however we have found that topics have a small number of consumer groups one for each logical subscriber Each group is composed of many consumer instances for scalability and fault tolerance This is nothing more than publish-subscribe semantics where the subscriber is cluster of consumers instead of a single process";
         Properties props = new Properties();
-        props.put("bootstrap.servers", "192.168.64.128:9092,192.168.64.129:9092,192.168.64.131:9092");
+//        props.put("bootstrap.servers", "192.168.64.128:9092,192.168.64.129:9092,192.168.64.131:9092");
+        props.put("bootstrap.servers", "192.168.0.201:9092");
         props.put("acks", "all");
         props.put("retries", 0);
         props.put("batch.size", 16384);
@@ -41,7 +43,7 @@ public class MyKafkaProducer {
 
         String[] w = words.split(" ");
 
-        for(int i = 0; i < 100000; i++){
+        for (int i = 0; i < 100000; i++) {
             Random random = new Random();
             int n = random.nextInt(w.length);
             producer.send(new ProducerRecord<String, String>("kafka-storm", w[n], w[n]));
