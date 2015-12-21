@@ -13,9 +13,9 @@ import java.util.Random;
 public class KafkaProducer {
     public static void main(String[] args) throws Exception {
         Properties props = new Properties();
-//        props.put("zk.connect", "192.168.64.128:2181,192.168.64.129:2181,192.168.64.130:2181");
-//        props.put("zk.connect", "192.168.0.201:2181");
+        // 集群环境 metadata.broker.list 为kafka config/server.properties文件中host.name属性的值 host:port 集群环境中为多个server.properties文件中host.name属性的值
         props.put("metadata.broker.list", "192.168.64.128:9092,192.168.64.129:9092,192.168.64.131:9092");
+        // 单机环境
 //        props.put("metadata.broker.list", "192.168.0.201:9092");
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put("request.required.acks", "1");

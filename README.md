@@ -17,13 +17,11 @@ storm WordCountTopology集群环境运行方式
 storm jar net.aimeizi.example.storm.WordCountTopology s1
 ```
 
-storm kafka集群测试环境运行
 
-```bash
-storm jar net.aimeizi.example.MyKafkaTopology s1
-```
+storm + kafka 集群环境搭建
 
-提交到集群运行时，需要拷贝以下jar包到storm集群安装目录下的lib目录
+拷贝kafka安装目录下lib目录下的jar到storm集群目录下的lib目录。具体拷贝清单文件如下:
+
 
 ```
 kafka_2.10-0.8.2.2.jar
@@ -39,6 +37,13 @@ curator-framework-2.5.0.jar
 curator-client-2.5.0.jar
 log4j-1.2.16.jar
 jopt-simple-3.2.jar
+```
+
+
+storm kafka集群测试环境运行
+
+```bash
+storm jar net.aimeizi.example.MyKafkaTopology s1
 ```
 
 # 参考文章
